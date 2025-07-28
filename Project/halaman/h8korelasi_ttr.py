@@ -17,7 +17,6 @@ def show_korelasi_ttr(df: pd.DataFrame):
 
     selected_comply_col = st.selectbox("Pilih metrik COMPLY yang ingin dianalisis:", comply_columns)
 
-    # --- Mapping Durasi Berdasarkan Jenis COMPLY ---
     mapping_durasi = {}
     kategori_label = ""
     durasi_order = []
@@ -66,7 +65,6 @@ def show_korelasi_ttr(df: pd.DataFrame):
 
     df_filtered['STATUS_KEPATUHAN'] = df_filtered[selected_comply_col].apply(normalize_comply)
 
-    # --- Grouping Tiket Unik ---
     grouped = (
         df_filtered
         .groupby(['GRUP_DURASI_LABEL', 'STATUS_KEPATUHAN'])['INCIDENT']
@@ -80,7 +78,6 @@ def show_korelasi_ttr(df: pd.DataFrame):
         st.error("❗ Tidak ada data valid untuk ditampilkan setelah pemrosesan.")
         return
 
-    # --- Penjelasan ---
     st.info(f"""
     **Penjelasan:**
 

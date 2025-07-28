@@ -6,16 +6,13 @@ def show_status(df: pd.DataFrame):
     st.header("📊 Analisis Distribusi Tiket Berdasarkan Status")
 
     if 'STATUS' in df.columns and 'INCIDENT' in df.columns:
-        # Hapus baris dengan status 'Tidak Diketahui'
         filtered_df = df[df['STATUS'] != 'Tidak Diketahui']
 
-        # Hitung jumlah insiden per status
         status_counts = filtered_df.groupby('STATUS')['INCIDENT'].count().sort_values(ascending=False)
 
         st.subheader("📋 Tabel Jumlah Tiket per Status")
         st.dataframe(status_counts)
 
-        # Slider untuk memilih Top N Status
         unique_status = filtered_df['STATUS'].nunique()
         min_slider = min(3, unique_status)
         top_n = st.slider(
@@ -25,10 +22,8 @@ def show_status(df: pd.DataFrame):
             value=min(4, unique_status)
         )
 
-        # Ambil Top N status
         top_status_counts = status_counts.nlargest(top_n)
 
-        # Ubah jadi dataframe untuk plot
         status_df = top_status_counts.reset_index()
         status_df.columns = ['STATUS', 'JUMLAH TIKET']
 

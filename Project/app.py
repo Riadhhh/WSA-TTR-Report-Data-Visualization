@@ -18,7 +18,6 @@ st.title("📊 Dashboard Analisis Report TTR WSA")
 st.sidebar.title("Pengaturan Data")
 uploaded_file = st.sidebar.file_uploader("Unggah file CSV atau XLSX Anda", type=['csv', 'xlsx'])
 
-# --- Fungsi untuk membaca dan membersihkan data dengan caching
 @st.cache_data
 def load_data_file(uploaded_file):
     try:
@@ -41,7 +40,6 @@ def load_data_file(uploaded_file):
         st.error(f"Terjadi error saat memuat dan memproses data: {e}")
         return None
 
-# --- Load data hanya sekali per file
 if uploaded_file is not None:
     if "dataframe" not in st.session_state or st.session_state.get("filename") != uploaded_file.name:
         st.session_state["dataframe"] = load_data_file(uploaded_file)
@@ -65,7 +63,6 @@ if uploaded_file is not None:
         ]
         selected_page = st.sidebar.selectbox("Pilih Analisis yang Ingin Dilihat", insight_options)
 
-        # --- Routing halaman ke fungsi masing-masing
         if selected_page == "Pratinjau Data Report TTR WSA":
             show_pratinjau(df)
         elif selected_page == "Distribusi Tiket Berdasarkan Status":

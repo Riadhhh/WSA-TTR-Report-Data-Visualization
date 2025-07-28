@@ -4,6 +4,8 @@ import pydeck as pdk
 import numpy as np
 
 def show_peta_witel(df: pd.DataFrame):
+    st.dataframe(data[['WITEL_MAP', 'JUMLAH']].sort_values(by='JUMLAH', ascending=False).reset_index(drop=True))
+
     """
     Menampilkan analisis geospasial dari insiden per WITEL.
     Fungsi ini melakukan:
@@ -16,13 +18,11 @@ def show_peta_witel(df: pd.DataFrame):
     st.header("🗺️ Peta Sebaran Insiden per WITEL")
 
     # --- Konfigurasi Koordinat WITEL ---
-    # Kamus yang berisi nama WITEL dan koordinat geografisnya [longitude, latitude].
     koordinat_witel = {
         "JAMBI": [103.6131, -1.6101],
         "RIAU": [101.4445, 0.5071],
         "SUMATERA BARAT": [100.3639, -0.9492],
         "KEPULAUAN RIAU": [104.4421, 0.9116],
-        # --- PERBAIKAN: Koordinat Aceh disesuaikan agar lebih akurat ---
         "ACEH": [95.3222, 5.5527],
         "BANDAR LAMPUNG": [105.2667, -5.4167],
         "MEDAN": [98.6769, 3.5897],
@@ -33,7 +33,6 @@ def show_peta_witel(df: pd.DataFrame):
     }
 
     # --- Mapping Nama WITEL ---
-    # Membersihkan dan menstandarkan nama WITEL dari data mentah.
     mapping_witel = {
         "JAMBI": "JAMBI", "RIDAR": "RIAU", "SUMBAR": "SUMATERA BARAT",
         "RIKEP": "KEPULAUAN RIAU", "ACEH": "ACEH", "LAMPUNG": "BANDAR LAMPUNG",
@@ -47,11 +46,9 @@ def show_peta_witel(df: pd.DataFrame):
         return
 
     df['WITEL_MAP'] = df['WITEL'].map(mapping_witel)
-    # Filter dataframe untuk hanya menyertakan WITEL yang memiliki koordinat
     df_filtered = df.dropna(subset=['WITEL_MAP'])
     df_filtered = df_filtered[df_filtered['WITEL_MAP'].isin(koordinat_witel.keys())]
 
-    # --- Sidebar untuk Filter Analisis ---
     st.sidebar.subheader("🔎 Jenis Analisis Peta")
     mode = st.sidebar.selectbox("Pilih Mode Analisis:", [
         "Jumlah Total Insiden",
@@ -59,15 +56,12 @@ def show_peta_witel(df: pd.DataFrame):
         "Jumlah Insiden Berdasarkan STATUS"
     ])
 
-    # Inisialisasi 'data' sebagai DataFrame kosong
     data = pd.DataFrame()
 
-    # Logika untuk memfilter dan mengelompokkan data berdasarkan mode yang dipilih
     if mode == "Jumlah Total Insiden":
         data = df_filtered.groupby('WITEL_MAP')['INCIDENT'].count().reset_index(name='JUMLAH')
 
     elif mode == "Jumlah Insiden Berdasarkan SERVICE TYPE":
-        # Pastikan kolom 'SERVICE TYPE' ada
         if 'SERVICE TYPE' in df_filtered.columns:
             service_types = df_filtered['SERVICE TYPE'].dropna().unique()
             if len(service_types) > 0:
@@ -79,7 +73,6 @@ def show_peta_witel(df: pd.DataFrame):
             st.error("Kolom 'SERVICE TYPE' tidak ditemukan.")
 
     elif mode == "Jumlah Insiden Berdasarkan STATUS":
-        # Pastikan kolom 'STATUS' ada
         if 'STATUS' in df_filtered.columns:
             statuses = df_filtered['STATUS'].dropna().unique()
             if len(statuses) > 0:
@@ -90,7 +83,6 @@ def show_peta_witel(df: pd.DataFrame):
         else:
             st.error("Kolom 'STATUS' tidak ditemukan.")
 
-    # Hentikan eksekusi jika tidak ada data setelah filtering
     if data.empty:
         st.warning("Tidak ada data untuk ditampilkan dengan filter yang dipilih. Silakan coba filter lain.")
         return
@@ -102,12 +94,8 @@ def show_peta_witel(df: pd.DataFrame):
     # --- Transformasi Logaritmik untuk Skala Lingkaran ---
     data['JUMLAH_LOG'] = np.log1p(data['JUMLAH'])  # log(1 + x) untuk menghindari log(0)
 
-    # --- Visualisasi PyDeck ---
     st.subheader("🌍 Peta Interaktif Jumlah Insiden")
 
-    # --- PERBAIKAN: Formula radius diubah untuk memastikan visibilitas minimum ---
-    # Menambahkan radius dasar (5000) agar lingkaran tetap terlihat meskipun jumlahnya kecil.
-    # Skala logaritmik (JUMLAH_LOG * 10000) tetap digunakan untuk menunjukkan perbedaan relatif.
     layer = pdk.Layer(
         "ScatterplotLayer",
         data,
@@ -120,19 +108,17 @@ def show_peta_witel(df: pd.DataFrame):
 
     # Pengaturan tampilan awal peta
     view_state = pdk.ViewState(
-        longitude=101.5, # Disesuaikan agar lebih ke tengah Sumatera
+        longitude=101.5, 
         latitude=0.5,
-        zoom=4.5, # Sedikit lebih dekat
-        pitch=45 # Memberikan sedikit perspektif 3D
+        zoom=4.5,
+        pitch=45 
     )
 
-    # Konfigurasi tooltip saat mouse hover
     tooltip = {
         "html": "<b>{WITEL_MAP}</b><br/>Jumlah Insiden: {JUMLAH}",
         "style": {"backgroundColor": "steelblue", "color": "white", "border-radius": "5px", "padding": "5px"}
     }
 
-    # Membuat objek Deck dan menampilkannya di Streamlit
     r = pdk.Deck(
         layers=[layer],
         initial_view_state=view_state,
@@ -141,6 +127,3 @@ def show_peta_witel(df: pd.DataFrame):
     )
     st.pydeck_chart(r)
 
-    # --- Tabel Data ---
-    st.subheader("📊 Tabel Ringkasan")
-    st.dataframe(data[['WITEL_MAP', 'JUMLAH']].sort_values(by='JUMLAH', ascending=False).reset_index(drop=True))

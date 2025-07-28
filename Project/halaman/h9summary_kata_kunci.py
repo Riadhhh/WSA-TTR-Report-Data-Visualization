@@ -18,7 +18,6 @@ def show_summary_kata_kunci(df: pd.DataFrame):
     Analisis ini akan menampilkan **frekuensi kemunculan kata-kata tersebut** dalam bentuk Word Cloud dan Bar Chart.
     """)
 
-    # --- Sidebar Pengaturan ---
     st.sidebar.subheader("Pengaturan Kata Kunci")
     keyword_list_input = st.sidebar.text_area(
         "Masukkan daftar kata kunci yang ingin dianalisis (dipisahkan koma):",
@@ -28,12 +27,10 @@ def show_summary_kata_kunci(df: pd.DataFrame):
     max_words = st.sidebar.slider("Jumlah kata kunci maksimum yang ditampilkan:", 5, 50, 20)
     min_freq = st.sidebar.number_input("Minimal frekuensi kata:", 1, 100, 2)
 
-    # --- Preprocessing Teks Summary ---
     text_summary = ' '.join(df['SUMMARY'].dropna().astype(str)).lower()
     text_summary = re.sub(r'[^a-z\s]', '', text_summary)  # hapus karakter non-huruf
     all_words = text_summary.split()
 
-    # --- Whitelist Kata Kunci ---
     whitelist_keywords = [kw.strip() for kw in keyword_list_input.lower().split(',') if kw.strip()]
     if not whitelist_keywords:
         st.warning("Mohon masukkan minimal satu kata kunci yang valid.")
@@ -48,7 +45,6 @@ def show_summary_kata_kunci(df: pd.DataFrame):
         st.info("Tidak ada kata dari whitelist yang ditemukan dalam data.")
         return
 
-    # --- Word Cloud ---
     st.subheader("☁️ Word Cloud Berdasarkan Kata Kunci")
     wordcloud = WordCloud(
         width=1200,
@@ -63,7 +59,6 @@ def show_summary_kata_kunci(df: pd.DataFrame):
     ax.axis('off')
     st.pyplot(fig_wc)
 
-    # --- Bar Chart Frekuensi Kata ---
     st.subheader("📊 Frekuensi Kata Kunci")
     df_keyword = pd.DataFrame(selected_words, columns=['Kata Kunci', 'Frekuensi'])
     fig_bar = px.bar(
@@ -80,7 +75,6 @@ def show_summary_kata_kunci(df: pd.DataFrame):
     )
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    # --- Ringkasan ---
     st.markdown("🔍 **Top 5 Kata Kunci Teratas:**")
     top5 = ', '.join([w for w, _ in selected_words[:5]])
     st.success(top5)

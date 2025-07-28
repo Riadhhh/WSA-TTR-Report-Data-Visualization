@@ -6,10 +6,8 @@ def show_owner_group(df: pd.DataFrame):
     st.header("🏢 Analisis Owner Group dengan Tiket Terbanyak")
 
     if 'OWNER GROUP' in df.columns and 'INCIDENT' in df.columns:
-        # Filter data: buang 'Tidak Diketahui'
         filtered_df = df[df['OWNER GROUP'] != 'Tidak Diketahui']
 
-        # Hitung jumlah tiket per owner group
         owner_group_counts = (
             filtered_df.groupby('OWNER GROUP')['INCIDENT']
             .count()
@@ -19,7 +17,6 @@ def show_owner_group(df: pd.DataFrame):
         st.subheader("📋 Tabel Jumlah Tiket per Owner Group")
         st.dataframe(owner_group_counts)
 
-        # Slider untuk memilih Top N
         unique_owner_groups = filtered_df['OWNER GROUP'].nunique()
         min_slider = min(5, unique_owner_groups)
         top_n = st.slider(
@@ -29,10 +26,8 @@ def show_owner_group(df: pd.DataFrame):
             value=min(10, unique_owner_groups)
         )
 
-        # Ambil Top N
         top_owner_group_counts = owner_group_counts.nlargest(top_n)
 
-        # Siapkan dataframe untuk plotly
         owner_group_df = top_owner_group_counts.reset_index()
         owner_group_df.columns = ['OWNER GROUP', 'JUMLAH TIKET']
 
