@@ -4,8 +4,6 @@ import pydeck as pdk
 import numpy as np
 
 def show_peta_witel(df: pd.DataFrame):
-    st.dataframe(data[['WITEL_MAP', 'JUMLAH']].sort_values(by='JUMLAH', ascending=False).reset_index(drop=True))
-
     """
     Menampilkan analisis geospasial dari insiden per WITEL.
     Fungsi ini melakukan:
@@ -94,36 +92,44 @@ def show_peta_witel(df: pd.DataFrame):
     # --- Transformasi Logaritmik untuk Skala Lingkaran ---
     data['JUMLAH_LOG'] = np.log1p(data['JUMLAH'])  # log(1 + x) untuk menghindari log(0)
 
+    # --- Tampilkan Tabel Ringkasan ---
+    st.subheader("📋 Tabel Ringkasan Jumlah Insiden per WITEL")
+    st.dataframe(data[['WITEL_MAP', 'JUMLAH']].sort_values(by='JUMLAH', ascending=False).reset_index(drop=True))
+
+    # --- Peta Interaktif ---
     st.subheader("🌍 Peta Interaktif Jumlah Insiden")
 
     layer = pdk.Layer(
         "ScatterplotLayer",
         data,
         get_position='[LON, LAT]',
-        get_radius="5000 + JUMLAH_LOG * 10000", # Radius dasar + skala logaritmik
+        get_radius="5000 + JUMLAH_LOG * 10000",  # Radius dasar + skala logaritmik
         get_fill_color='[200, 30, 0, 160]',
         pickable=True,
         auto_highlight=True,
     )
 
-    # Pengaturan tampilan awal peta
     view_state = pdk.ViewState(
-        longitude=101.5, 
+        longitude=101.5,
         latitude=0.5,
         zoom=4.5,
-        pitch=45 
+        pitch=45
     )
 
     tooltip = {
         "html": "<b>{WITEL_MAP}</b><br/>Jumlah Insiden: {JUMLAH}",
-        "style": {"backgroundColor": "steelblue", "color": "white", "border-radius": "5px", "padding": "5px"}
+        "style": {
+            "backgroundColor": "steelblue",
+            "color": "white",
+            "border-radius": "5px",
+            "padding": "5px"
+        }
     }
 
     r = pdk.Deck(
         layers=[layer],
         initial_view_state=view_state,
         tooltip=tooltip,
-        map_style='mapbox://styles/mapbox/light-v9' # Menggunakan style peta yang lebih terang
+        map_style='mapbox://styles/mapbox/light-v9'
     )
     st.pydeck_chart(r)
-
