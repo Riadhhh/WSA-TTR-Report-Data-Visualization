@@ -130,6 +130,7 @@ def show_peta_witel(df: pd.DataFrame):
         layers=[layer],
         initial_view_state=view_state,
         tooltip=tooltip,
-        map_style='mapbox://styles/mapbox/light-v9'
+        map_style='https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
     )
+
     st.pydeck_chart(r)
