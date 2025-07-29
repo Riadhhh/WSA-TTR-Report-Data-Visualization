@@ -90,21 +90,44 @@ def show_peta_witel(df: pd.DataFrame):
     data['LAT'] = data['WITEL_MAP'].apply(lambda x: koordinat_witel[x][1])
 
     # --- Transformasi Logaritmik untuk Skala Lingkaran ---
-    data['JUMLAH_LOG'] = np.log1p(data['JUMLAH'])  # log(1 + x) untuk menghindari log(0)
+    data['JUMLAH_LOG'] = np.log1p(data['JUMLAH']) 
 
-    # --- Tampilkan Tabel Ringkasan ---
+    min_jumlah = data['JUMLAH'].min()
+    max_jumlah = data['JUMLAH'].max()
+    data['NORMALIZED'] = (data['JUMLAH'] - min_jumlah) / (max_jumlah - min_jumlah + 1e-9)
+
+    # Gradasi Warna Biru-Kuning-Merah
+    def gradasi_biru_kuning_merah(x):
+        if x <= 0.5:
+            # Biru (0,0,255) ke Kuning (255,255,0)
+            ratio = x / 0.5
+            r = int(255 * ratio)
+            g = int(255 * ratio)
+            b = int(255 * (1 - ratio))
+        else:
+            # Kuning (255,255,0) ke Merah (255,0,0)
+            ratio = (x - 0.5) / 0.5
+            r = 255
+            g = int(255 * (1 - ratio))
+            b = 0
+        return [r, g, b, 200]
+
+    data['COLOR'] = data['NORMALIZED'].apply(gradasi_biru_kuning_merah)
+
     st.subheader("📋 Tabel Ringkasan Jumlah Insiden per WITEL")
     st.dataframe(data[['WITEL_MAP', 'JUMLAH']].sort_values(by='JUMLAH', ascending=False).reset_index(drop=True))
 
-    # --- Peta Interaktif ---
     st.subheader("🌍 Peta Interaktif Jumlah Insiden")
 
+    # 3D Column Layer untuk Peta
     layer = pdk.Layer(
-        "ScatterplotLayer",
-        data,
+        "ColumnLayer",
+        data=data,
         get_position='[LON, LAT]',
-        get_radius="5000 + JUMLAH_LOG * 10000",  # Radius dasar + skala logaritmik
-        get_fill_color='[200, 30, 0, 160]',
+        get_elevation='JUMLAH_LOG * 10500', 
+        elevation_scale=1,
+        radius=15000,
+        get_fill_color='COLOR',
         pickable=True,
         auto_highlight=True,
     )
@@ -126,11 +149,11 @@ def show_peta_witel(df: pd.DataFrame):
         }
     }
 
+    # Atur Peta dengan PyDeck
     r = pdk.Deck(
         layers=[layer],
         initial_view_state=view_state,
         tooltip=tooltip,
-        map_style='https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+        map_style="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
     )
-
     st.pydeck_chart(r)
