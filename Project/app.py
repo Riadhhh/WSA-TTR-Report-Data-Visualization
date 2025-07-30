@@ -11,9 +11,10 @@ from halaman.h7prioritas import show_prioritas
 from halaman.h8korelasi_ttr import show_korelasi_ttr
 from halaman.h9summary_kata_kunci import show_summary_kata_kunci
 from halaman.h10witel import show_peta_witel
+from halaman.h11description import show_description
 
 st.set_page_config(page_title="Dashboard Analisis Tiket", layout="wide")
-st.title("📊 Dashboard Analisis Report TTR WSA")
+st.title("Dashboard Analisis Report TTR WSA")
 
 st.sidebar.title("Pengaturan Data")
 uploaded_file = st.sidebar.file_uploader("Unggah file CSV atau XLSX Anda", type=['csv', 'xlsx'])
@@ -57,9 +58,10 @@ if uploaded_file is not None:
             "Proporsi Tiket Berdasarkan Segmen Pelanggan",
             "Jenis Layanan Paling Sering Gangguan",
             "Sebaran Tiket Berdasarkan Prioritas",
-            "Korelasi GRUP DURASI vs COMPLY TTR",
+            "Korelasi COMPLY TTR",
             "Klasterisasi Masalah Berdasarkan Kata Kunci dalam Kolom SUMMARY",
-            "WITEL Berdasarkan Insiden"
+            "WITEL Berdasarkan Insiden",
+            "Analisis Kata Kunci Kolom Description",
         ]
         selected_page = st.sidebar.selectbox("Pilih Analisis yang Ingin Dilihat", insight_options)
 
@@ -77,12 +79,14 @@ if uploaded_file is not None:
             show_service_type(df)
         elif selected_page == "Sebaran Tiket Berdasarkan Prioritas":
             show_prioritas(df)
-        elif selected_page == "Korelasi GRUP DURASI vs COMPLY TTR":
+        elif selected_page == "Korelasi COMPLY TTR":
             show_korelasi_ttr(df)
         elif selected_page == "Klasterisasi Masalah Berdasarkan Kata Kunci dalam Kolom SUMMARY":
             show_summary_kata_kunci(df)
         elif selected_page == "WITEL Berdasarkan Insiden":
             show_peta_witel(df)
+        elif selected_page == "Analisis Kata Kunci Kolom Description":
+            show_description(df)
         else:
             st.warning("Halaman belum tersedia.")
 
